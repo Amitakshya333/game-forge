@@ -276,7 +276,9 @@ export class Engine {
   }
   assign(t: Civ, exitId: string) {
     const ex = EXITS.find((e) => e.id === exitId)!; const [tx, ty] = ex.tiles[Math.floor(ex.tiles.length / 2)];
-    t.route = this.astar(t, { x: tx + 0.5, y: ty + 0.5 }, true); t.exitId = exitId; t.state = "follow"; t.leader = "route"; t.planned = true;
+    const route = this.astar(t, { x: tx + 0.5, y: ty + 0.5 }, true);
+    if (!route.length) { this.toast("No path from there to that exit"); return; }
+    t.route = route; t.exitId = exitId; t.state = "follow"; t.leader = "route"; t.planned = true;
     for (const c of this.civs) if (c.group === t.id && c.kind === "student" && (c.state === "hide" || (c.state === "follow" && c.leader === t.id))) { c.state = "follow"; c.leader = t.id; c.planned = true; }
   }
   routeRisk(path: V[]) { let r = 0; for (const p of path) r += this.risk[Math.floor(p.y) * W + Math.floor(p.x)]; return r; }
