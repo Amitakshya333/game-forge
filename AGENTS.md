@@ -28,3 +28,7 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules
+- The game runs on a custom canvas engine in `src/game/engine.ts` (simulation + rendering, no DOM UI); React in `src/routes/index.tsx` only renders menus/HUD from `engine.snapshot()` — keeps game logic independent of UI.
+- Campus layout, exits, patrols and teacher names live in `src/game/campus.ts` so the map can be replaced with the real layout without touching the engine.
