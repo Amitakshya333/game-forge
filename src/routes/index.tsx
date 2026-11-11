@@ -87,7 +87,7 @@ function Intro({ onDone }: { onDone: () => void }) {
   const [wake, setWake] = useState(false);
   useEffect(() => {
     if (wake) return;
-    const line = LINES[i];
+    const line = LINES[i] ?? "";
     if (chars < line.length) { const t = setTimeout(() => setChars((c) => c + 1), 32); return () => clearTimeout(t); }
     const t = setTimeout(() => {
       if (i < LINES.length - 1) { setI(i + 1); setChars(0); } else { setWake(true); sfx.glitch(); }
