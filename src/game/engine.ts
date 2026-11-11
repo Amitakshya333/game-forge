@@ -503,7 +503,7 @@ export class Engine {
     for (const c of this.civs) {
       if (c.state !== "follow" && c.state !== "hide") continue;
       const d = Math.hypot(c.x - h.x, c.y - h.y);
-      if (c.state === "hide" && d > 3) continue;
+      if (c.state === "hide" && d > 2) continue;
       if (this.canSee(h, c.x, c.y, this.d.range * 0.65)) {
         h.civT += 1 / 60; this.turn(h, Math.atan2(c.y - h.y, c.x - h.x), 1 / 60, 2);
         if (h.civT > this.d.grab) { h.state = "grab"; h.grab = c.id; h.path = []; h.civT = 0; }
@@ -531,7 +531,10 @@ export class Engine {
       speed = 2.2;
       const fol = this.civs.filter((s) => s.leader === c.id && s.state === "follow");
       const lag = fol.some((s) => Math.hypot(s.x - c.x, s.y - c.y) > 4);
-      if (!lag && c.route) this.stepPath(c, c.route, speed, dt);
+      const nxt = c.route?.[Math.min(2, c.route.length - 1)];
+      const watched = nxt && this.hostiles.some((h) => h.state !== "down" && this.canSee(h, nxt.x, nxt.y, this.d.range * 0.7));
+      (c as any).waitT = watched ? ((c as any).waitT ?? 0) + dt : 0;
+      if (!lag && c.route && (!watched || (c as any).waitT > 7)) this.stepPath(c, c.route, speed, dt);
       if (!c.route?.length) this.leaderOut(c);
     } else if (c.leader) {
       const lead = c.leader === "player" ? this.player : c.leader.startsWith("exit:") ? null : this.civs.find((o) => o.id === c.leader);
