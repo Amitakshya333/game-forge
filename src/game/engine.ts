@@ -4,7 +4,7 @@ import { sfx } from "./audio";
 export type Difficulty = "rookie" | "veteran" | "elite" | "nightmare";
 type V = { x: number; y: number };
 type HState = "patrol" | "suspicious" | "investigate" | "alert" | "search" | "grab" | "down";
-interface Hostile { id: string; x: number; y: number; facing: number; hp: number; state: HState; aw: number; route: V[]; wp: number; path: V[]; pathT: number; pathGoal?: V; target?: V; fireCd: number; searchT: number; grab?: string; sees: boolean; lostT: number }
+interface Hostile { id: string; x: number; y: number; facing: number; hp: number; state: HState; aw: number; route: V[]; wp: number; path: V[]; pathT: number; pathGoal?: V; target?: V; fireCd: number; searchT: number; grab?: string; sees: boolean; lostT: number; civT: number }
 type CState = "hide" | "follow" | "captured" | "evac";
 interface Civ { id: string; kind: "student" | "teacher"; name: string; x: number; y: number; state: CState; leader: string | null; group: string; holder?: string; route?: V[]; planned: boolean; color: string; exitId?: string }
 interface Noise { x: number; y: number; r: number; t: number; max: number; color: string }
@@ -90,7 +90,7 @@ export class Engine {
     for (let i = 0; i < 3; i++) this.civs.push({ id: `c${i}`, kind: "student", name: "Student", x: 6.5 + i * 2, y: 13.5, state: "hide", leader: null, group: "none", planned: false, color: SHIRTS[i] });
   }
   mkHostile(id: string, p: V, route: V[]): Hostile {
-    return { id, x: p.x, y: p.y, facing: -Math.PI / 2, hp: this.d.hp, state: "patrol", aw: 0, route, wp: 0, path: [], pathT: 0, fireCd: 1, searchT: 0, sees: false, lostT: 0 };
+    return { id, x: p.x, y: p.y, facing: -Math.PI / 2, hp: this.d.hp, state: "patrol", aw: 0, route, wp: 0, path: [], pathT: 0, fireCd: 1, searchT: 0, sees: false, lostT: 0, civT: 0 };
   }
   snap(p: V): V {
     let best = p, bd = 1e9;
@@ -490,7 +490,7 @@ export class Engine {
         if (!c || c.state === "captured" || c.state === "evac") { h.state = "patrol"; h.grab = undefined; h.path = []; break; }
         if (this.goTo(h, c, 3, dt) || Math.hypot(c.x - h.x, c.y - h.y) < 1.1) {
           let n = 0;
-          for (const o of this.civs) if ((o.state === "follow" || o.state === "hide") && Math.hypot(o.x - c.x, o.y - c.y) < 2.2) { o.state = "captured"; o.holder = h.id; o.leader = null; n++; }
+          for (const o of this.civs) if (n < 3 && (o.state === "follow" || o.state === "hide") && Math.hypot(o.x - c.x, o.y - c.y) < 1.5) { o.state = "captured"; o.holder = h.id; o.leader = null; n++; }
           this.floats.push({ x: c.x, y: c.y - 0.6, text: `${n} CAPTURED`, t: 1.6, color: C.amber }); sfx.alert();
           this.radio("Meera: They grabbed people near " + (zoneAt(c.x, c.y)?.name ?? "the path") + ". Take that one down to free them.");
           h.state = "patrol"; h.grab = undefined; h.path = [];
@@ -504,8 +504,13 @@ export class Engine {
       if (c.state !== "follow" && c.state !== "hide") continue;
       const d = Math.hypot(c.x - h.x, c.y - h.y);
       if (c.state === "hide" && d > 3) continue;
-      if (this.canSee(h, c.x, c.y, this.d.range * 0.85)) { h.state = "grab"; h.grab = c.id; h.path = []; return; }
+      if (this.canSee(h, c.x, c.y, this.d.range * 0.65)) {
+        h.civT += 1 / 60; this.turn(h, Math.atan2(c.y - h.y, c.x - h.x), 1 / 60, 2);
+        if (h.civT > 1.1) { h.state = "grab"; h.grab = c.id; h.path = []; h.civT = 0; }
+        return;
+      }
     }
+    h.civT = Math.max(0, h.civT - 1 / 60);
   }
   hostileShoot(h: Hostile, dist: number) {
     const p = this.player; h.fireCd = this.d.fire * (0.8 + Math.random() * 0.4); sfx.enemyShot();
