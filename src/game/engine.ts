@@ -21,10 +21,10 @@ export interface Snapshot {
 export interface Result { win: boolean; path: "clear" | "evac" | "perfect" | "fail"; reason: string; evac: number; total: number; captured: number; down: number; hostiles: number; alerts: number; shots: number; takedowns: number; planned: number; time: number; stars: number; score: number; tips: string[] }
 
 const DIFF = {
-  rookie: { hostiles: 9, hp: 80, dmg: 8, acc: 0.6, range: 7.5, fire: 1.1, time: 720, waves: 1 },
-  veteran: { hostiles: 11, hp: 100, dmg: 11, acc: 0.75, range: 8.5, fire: 0.95, time: 600, waves: 1 },
-  elite: { hostiles: 13, hp: 110, dmg: 14, acc: 0.85, range: 9.5, fire: 0.8, time: 480, waves: 2 },
-  nightmare: { hostiles: 13, hp: 130, dmg: 18, acc: 0.95, range: 10.5, fire: 0.7, time: 420, waves: 3 },
+  rookie: { hostiles: 9, hp: 80, dmg: 8, acc: 0.6, range: 7.5, fire: 1.1, time: 720, waves: 1, grab: 2.2 },
+  veteran: { hostiles: 11, hp: 100, dmg: 11, acc: 0.75, range: 8.5, fire: 0.95, time: 600, waves: 1, grab: 1.5 },
+  elite: { hostiles: 13, hp: 110, dmg: 14, acc: 0.85, range: 9.5, fire: 0.8, time: 480, waves: 2, grab: 1.1 },
+  nightmare: { hostiles: 13, hp: 130, dmg: 18, acc: 0.95, range: 10.5, fire: 0.7, time: 420, waves: 3, grab: 0.9 },
 };
 const FOV = (100 * Math.PI) / 180;
 const SHIRTS = ["#e8ecf5", "#ffd27a", "#9fd3ff", "#ff9eb5", "#c9b8ff", "#b6f5d0", "#ffe9a8"];
@@ -253,7 +253,7 @@ export class Engine {
         for (let x = Math.max(0, Math.floor(h.x) - rg); x <= Math.min(W - 1, Math.floor(h.x) + rg); x++) {
           const d = Math.hypot(x + 0.5 - h.x, y + 0.5 - h.y);
           if (d < 4) this.risk[y * W + x] += 3;
-          if (this.canSee(h, x + 0.5, y + 0.5, this.d.range)) this.risk[y * W + x] += 10;
+          if (this.canSee(h, x + 0.5, y + 0.5, this.d.range)) this.risk[y * W + x] += 25;
         }
       for (const p of h.route) for (let y = Math.floor(p.y) - 3; y <= Math.floor(p.y) + 3; y++) for (let x = Math.floor(p.x) - 3; x <= Math.floor(p.x) + 3; x++) if (x >= 0 && y >= 0 && x < W && y < H) this.risk[y * W + x] += 2;
       if (h.route.length > 1) for (let i = 0; i < h.route.length; i++) {
@@ -506,7 +506,7 @@ export class Engine {
       if (c.state === "hide" && d > 3) continue;
       if (this.canSee(h, c.x, c.y, this.d.range * 0.65)) {
         h.civT += 1 / 60; this.turn(h, Math.atan2(c.y - h.y, c.x - h.x), 1 / 60, 2);
-        if (h.civT > 1.1) { h.state = "grab"; h.grab = c.id; h.path = []; h.civT = 0; }
+        if (h.civT > this.d.grab) { h.state = "grab"; h.grab = c.id; h.path = []; h.civT = 0; }
         return;
       }
     }
