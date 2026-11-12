@@ -30,5 +30,5 @@ use the editor.
 <!-- LOVABLE:END -->
 
 ## Project rules
-- The game runs on a custom canvas engine in `src/game/engine.ts` (simulation + rendering, no DOM UI); React in `src/routes/index.tsx` only renders menus/HUD from `engine.snapshot()` — keeps game logic independent of UI.
-- Campus layout, exits, patrols and teacher names live in `src/game/campus.ts` so the map can be replaced with the real layout without touching the engine.
+- The game runs on a custom Three.js WebGL 3D engine in `src/game/engine.ts` + `src/game/renderer3d.ts` (simulation + 3D rendering, no DOM UI); React in `src/routes/index.tsx` only renders menus/HUD from `engine.snapshot()` — keeps game logic independent of UI.
+- Articulated 3D character rigs live in `src/game/models3d.ts`, procedural 3D textures/buildings/props live in `src/game/assets3d.ts`, and multiple playable campus maps live in `src/game/maps.ts` (re-exported in `src/game/campus.ts`) so new maps and 3D assets can be added without touching simulation logic.

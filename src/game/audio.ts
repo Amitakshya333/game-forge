@@ -27,6 +27,8 @@ export const sfx = {
   enemyShot: () => noise(0.2, 0.25, 1400),
   whistle: () => { tone(1800, 0.12, "sine", 0.08); setTimeout(() => tone(2200, 0.18, "sine", 0.08), 120); },
   thud: () => { tone(120, 0.2, "triangle", 0.3, 50); noise(0.1, 0.2, 600); },
+  shatter: () => { noise(0.18, 0.32, 6200); tone(1650, 0.09, "triangle", 0.08, 920); },
+  reload: () => { tone(620, 0.05, "square", 0.06); setTimeout(() => tone(920, 0.06, "square", 0.07), 160); },
   chime: () => { tone(880, 0.3, "sine", 0.1); setTimeout(() => tone(1320, 0.4, "sine", 0.1), 110); },
   alert: () => { tone(520, 0.15, "square", 0.06); setTimeout(() => tone(780, 0.2, "square", 0.06), 140); },
   hurt: () => tone(200, 0.25, "sawtooth", 0.12, 80),
